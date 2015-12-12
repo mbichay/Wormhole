@@ -27,7 +27,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>WormholeUpload</servlet-name>
-    <url-pattern>/wormhole-upload</url-pattern>
+    <url-pattern>/WormholeUpload</url-pattern>
   </servlet-mapping>
   <servlet>
     <description></description>
@@ -57,6 +57,6 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>WormholeDownload</servlet-name>
-    <url-pattern>/wormhole-download</url-pattern>
+    <url-pattern>/WormholeDownload</url-pattern>
   </servlet-mapping>
 </web-app>
