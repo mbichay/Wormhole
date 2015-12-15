@@ -12,6 +12,12 @@ import java.io.PrintWriter;
 import java.io.OutputStreamWriter;
 import java.io.FileInputStream;
 import java.net.URLConnection;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
@@ -21,6 +27,9 @@ public class WormholeEngine{
 	Wormhole view;
 	private String username, servletURL, mysqlURL, outputFilepath;
 	private static final String CHAR_SET = "UTF-8"; // Charset
+	private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
+	private static final String USER = "root";		//	for MYSQL DB
+	private static final String PASS = "team11";	//	for MYSQL DB
 	private HttpURLConnection httpConnUpload, httpConnDownload, httpConnQuery, httpConnDelete;
 	private URL uploadURL, downloadURL, queryURL, deleteURL;
 	private static final String UPLOAD = "/WormholeUpload";
@@ -69,6 +78,7 @@ public class WormholeEngine{
 			downloadURL = new URL(servletURL + DOWNLOAD);
 			httpConnUpload = (HttpURLConnection)uploadURL.openConnection();
 			httpConnDownload = (HttpURLConnection)downloadURL.openConnection();
+			//System.out.println("uploadURL: " + uploadURL + "\ndownloadURL: " + downloadURL);
 			if (httpConnUpload.getResponseCode() == 404 ||
 				httpConnDownload.getResponseCode() == 404){
 				throw new Exception();
@@ -77,10 +87,19 @@ public class WormholeEngine{
 			httpConnDownload.disconnect();
 		} catch (Exception e){
 			view.lockdown(true, "Servlet URL invalid.");
+			System.out.println(e.toString());
 			return;
 		} // End URL validation
 
 		// Begin mySQL URL validation
+		
+		try	{
+			Class.forName(JDBC_DRIVER);
+			Connection con = DriverManager.getConnection(mysqlURL,USER,PASS);
+		}	catch(Exception e)	{
+			System.out.println("Cannot connect to DB: " + e.toString());
+		}
+		
 		// End mySQL URL validation
 
 		// Begin output path validation
@@ -155,9 +174,30 @@ public class WormholeEngine{
 			String password = view.getUserInput('p');
 			Boolean loginOK = false;
 			//VANESSA START HERE
-			//code here
-			//code here
-			//VANESSA IF REGISTRATION IS SUCESSFUL, END HERE
+			Connection con = null;
+			PreparedStatement ps = null;
+			ResultSet rs = null;
+			
+			//	connect to database and use SELECT query to validate login
+			//System.out.println("mysqlURL: " + mysqlURL);
+			try	{
+				Class.forName(JDBC_DRIVER);
+				con = DriverManager.getConnection(mysqlURL,USER,PASS);
+				String loginSQL = "SELECT * FROM systemusers WHERE userName = ? AND password = ?";
+				ps = con.prepareStatement(loginSQL);
+				ps.setString(1, username);
+				ps.setString(2, password);
+				rs = ps.executeQuery();
+				
+				//	if user/pass combination found in the database, login succesful
+				System.out.println("rs.next():" + rs.next());
+				if(!rs.next())	{
+					loginOK = true;
+				}	
+			}	catch(Exception e1)	{
+				e1.toString();
+			}
+			//VANESSA IF LOGIN IS SUCESSFUL, END HERE
 			if (loginOK){
 				view.setUploadDownloadLayout(); // Display Upload/Download layout
 				view.setFeedback("Login successful.");
@@ -169,13 +209,32 @@ public class WormholeEngine{
 	}
 
 	class doRegisterListener implements ActionListener{
+
 		public void actionPerformed(ActionEvent e){
 			username = view.getUserInput('u');
 			String password = view.getUserInput('p');
 			Boolean loginOK = false;
 			//VANESSA START HERE
-			//code here
-			//code here
+			Connection con = null;
+			PreparedStatement ps = null;
+			int i;
+			
+			try	{
+				Class.forName(JDBC_DRIVER);
+				con = DriverManager.getConnection(mysqlURL,USER,PASS);
+				String registerSQL = "INSERT INTO systemusers(userName,password) VALUES (?,?)";
+				ps = con.prepareStatement(registerSQL);
+				ps.setString(1, username);
+				ps.setString(2, password);
+				i = ps.executeUpdate();
+				
+				if(i > 0)	{
+					loginOK = true;
+				}	
+				
+			}	catch(Exception e1)	{
+				e1.toString();
+			}
 			//VANESSA IF REGISTRATION IS SUCESSFUL, END HERE
 			if (loginOK){
 				view.setUploadDownloadLayout(); // Display Upload/Download layout
