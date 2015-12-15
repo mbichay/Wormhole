@@ -97,7 +97,8 @@ public class WormholeEngine{
 			Class.forName(JDBC_DRIVER);
 			Connection con = DriverManager.getConnection(mysqlURL,USER,PASS);
 		}	catch(Exception e)	{
-			System.out.println("Cannot connect to DB: " + e.toString());
+			//System.out.println("Cannot connect to DB: " + e.toString());
+			view.lockdown(true, "Cannot Connect to DB");
 		}
 		
 		// End mySQL URL validation
