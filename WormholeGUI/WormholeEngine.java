@@ -191,10 +191,8 @@ public class WormholeEngine{
 				rs = ps.executeQuery();
 				
 				//	if user/pass combination found in the database, login succesful
-				System.out.println("rs.next():" + rs.next());
-				if(!rs.next())	{
-					loginOK = true;
-				}	
+				loginOK = rs.next();
+				
 			}	catch(Exception e1)	{
 				e1.toString();
 			}
